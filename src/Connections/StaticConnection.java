@@ -37,7 +37,7 @@ public class StaticConnection {
         try {
             send.writeShort(task);
             send.writeObject(object);
-            return receive.readBoolean();
+            return (boolean) receive.readObject();
         } catch (Exception ex) {
         }
 
