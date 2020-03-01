@@ -35,8 +35,8 @@ public class StaticConnection {
 
     public synchronized static boolean send(int task, Object object) {
         try {
-            send.writeShort(task);
-            send.writeObject(object);
+            sendObject(task);
+            sendObject(object);
             return (boolean) receiveItem();
         } catch (Exception ex) {
         }
@@ -46,9 +46,9 @@ public class StaticConnection {
 
     public synchronized static Object get(short task, Object object) {
         try {
-            send.writeObject(task);
+            sendObject(task);
             if (object != null) {
-                send.writeObject(object);
+                sendObject(object);
             }
             return receiveItem();
         } catch (Exception ex) {
@@ -60,6 +60,11 @@ public class StaticConnection {
 
     public static synchronized Object receiveItem() throws IOException, ClassNotFoundException {
         return receive.readObject();
+    }
+    
+    public static synchronized void sendObject(Object object) throws IOException{
+        send.writeObject(object);
+        send.flush();
     }
 
     public static boolean loginUser() {
