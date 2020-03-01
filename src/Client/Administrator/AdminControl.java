@@ -5,12 +5,16 @@
  */
 package Client.Administrator;
 
+import Connections.StaticConnection;
 import Constants.ClientCst;
+import Models.Grade;
 import Models.User;
 import Threads.ManageTaskThread;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -27,7 +31,8 @@ public class AdminControl extends javax.swing.JFrame {
 
     int id;
     User userSelected;
-    private DefaultTableModel model;
+    private myModel model;
+    private ArrayList<String> roles;
 
     /**
      * Creates new form AdminControl
@@ -52,6 +57,11 @@ public class AdminControl extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
         btActivateUser = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList<>();
+        btCreate = new javax.swing.JButton();
+        btEdit = new javax.swing.JButton();
+        btDelete = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -91,14 +101,14 @@ public class AdminControl extends javax.swing.JFrame {
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 509, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btActivateUser)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(15, 15, 15)
                 .addComponent(btActivateUser)
-                .addContainerGap(245, Short.MAX_VALUE))
+                .addContainerGap(267, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
@@ -107,15 +117,42 @@ public class AdminControl extends javax.swing.JFrame {
 
         tpPanels.addTab("Users", jPanel1);
 
+        jScrollPane3.setViewportView(jList1);
+
+        btCreate.setText("Create");
+
+        btEdit.setText("Edit");
+
+        btDelete.setText("Delete");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 633, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btCreate, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
+                    .addComponent(btEdit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btDelete, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 292, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(btCreate)
+                        .addGap(18, 18, 18)
+                        .addComponent(btEdit)
+                        .addGap(18, 18, 18)
+                        .addComponent(btDelete)
+                        .addGap(0, 170, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3))
+                .addContainerGap())
         );
 
         tpPanels.addTab("Grades", jPanel2);
@@ -126,11 +163,13 @@ public class AdminControl extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(tpPanels, javax.swing.GroupLayout.DEFAULT_SIZE, 635, Short.MAX_VALUE))
+                .addComponent(tpPanels)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(tpPanels)
                 .addContainerGap())
         );
@@ -141,12 +180,13 @@ public class AdminControl extends javax.swing.JFrame {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
         new ManageTaskThread(null, ClientCst.GET_USERS, this).start();
-        
+
     }//GEN-LAST:event_formWindowOpened
 
     private void btActivateUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btActivateUserActionPerformed
         // TODO add your handling code here:
         new ManageTaskThread(null, ClientCst.GET_ROLES, this, userSelected).start();
+
     }//GEN-LAST:event_btActivateUserActionPerformed
 
     public synchronized void buildTable(ArrayList<User> userList) {
@@ -155,65 +195,112 @@ public class AdminControl extends javax.swing.JFrame {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (userList != null) {
-                    model = new DefaultTableModel();
-
-                    model.addColumn("ID");
-                    model.addColumn("USER");
-                    model.addColumn("PHONE");
-                    model.addColumn("ADDRESS");
-                    model.addColumn("AGE");
-                    model.addColumn("ROL");
-                    for (int i = 0; i < userList.size(); i++) {
-                        User u = (User) userList.get(i);
-                        model.addRow(new Object[]{u.getId(), u.getName(), u.getPhoneNumber(), u.getAddress(), u.getAge(), u.getRol()});
-                    }
-                        
-                    jTable1.setModel(model);
-                    model.fireTableDataChanged();
-                    ListSelectionModel cell = jTable1.getSelectionModel();
-                    cell.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-                    cell.addListSelectionListener(new ListSelectionListener() {
-                        @Override
-                        public void valueChanged(ListSelectionEvent e) {
-                            int fila = jTable1.getSelectedRow();
-                            id = (int) jTable1.getValueAt(fila, 0);
-                            btActivateUser.setEnabled(true);
-                            userSelected = new User();
-                            userSelected.setId(id);
-                            userSelected.setRol((byte)jTable1.getValueAt(fila, 5));
-                        }
-                    });
-                }
+                createTableUsers(userList);
             }
         }, 200);
 
     }
-    
-    
+
+    public synchronized void buildGradeList(ArrayList<Grade> gradeList) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                createListGrade(gradeList);
+            }
+        }, 200);
+    }
+
+    public void createListGrade(ArrayList<Grade> grades) {
+        System.out.println(grades.size());
+        if (!grades.isEmpty()) {
+            DefaultListModel model = new DefaultListModel();
+            for(Grade grade : grades){
+                model.addElement(grade.getCode()+"\t"+grade.getName());
+            }
+            jList1.setModel(model);
+            
+        }
+    }
+
+    public void createTableUsers(ArrayList<User> userList) {
+        roles = (ArrayList<String>) StaticConnection.get(ClientCst.GET_ROLES, null);
+        if (userList != null) {
+            model = new myModel();
+
+            model.addColumn("ID");
+            model.addColumn("USER");
+            model.addColumn("PHONE");
+            model.addColumn("ADDRESS");
+            model.addColumn("AGE");
+            model.addColumn("ROL");
+            for (int i = 0; i < userList.size(); i++) {
+                User u = (User) userList.get(i);
+                String rol = roles.get(u.getRol());
+
+                model.addRow(new Object[]{u.getId(), u.getName(), u.getPhoneNumber(), u.getAddress(), u.getAge(), rol});
+            }
+
+            jTable1.setModel(model);
+            model.fireTableDataChanged();
+            ListSelectionModel cell = jTable1.getSelectionModel();
+            cell.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            cell.addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    int fila = jTable1.getSelectedRow();
+                    id = (int) jTable1.getValueAt(fila, 0);
+                    btActivateUser.setEnabled(true);
+                    userSelected = new User();
+                    userSelected.setId(id);
+                    userSelected.setRol((byte) jTable1.getValueAt(fila, 5));
+                }
+            });
+            new ManageTaskThread(null, ClientCst.GET_GRADES, this).start();
+        }
+    }
 
     /**
      * @param args the command line arguments
      */
-
-    public DefaultTableModel getModel() {
+    public myModel getModel() {
         return model;
     }
 
-    public void setModel(DefaultTableModel model) {
+    public void setModel(myModel model) {
         this.model = model;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btActivateUser;
+    private javax.swing.JButton btCreate;
+    private javax.swing.JButton btDelete;
+    private javax.swing.JButton btEdit;
+    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTable1;
     private javax.swing.JTabbedPane tpPanels;
     // End of variables declaration//GEN-END:variables
 
+    public ArrayList<String> getRoles() {
+        return roles;
+    }
 
+    public void setRoles(ArrayList<String> roles) {
+        this.roles = roles;
+    }
+
+}
+
+class myModel extends DefaultTableModel {
+
+    @Override
+    public boolean isCellEditable(int row, int column) {
+
+        return false;
+    }
 }

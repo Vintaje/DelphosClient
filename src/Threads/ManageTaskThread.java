@@ -8,6 +8,7 @@ package Threads;
 import Client.Administrator.AdminControl;
 import Connections.StaticConnection;
 import Constants.ClientCst;
+import Models.Grade;
 import Models.User;
 import Util.Util;
 import java.util.ArrayList;
@@ -69,6 +70,9 @@ public class ManageTaskThread implements Runnable {
             case ClientCst.GET_ROLES:
                 getRoles();
                 break;
+            case ClientCst.GET_GRADES:
+                getGrades();
+                break;
             default:
                 defaultOption();
         }
@@ -105,12 +109,17 @@ public class ManageTaskThread implements Runnable {
     }
 
     public void defaultOption() {
-        boolean response = StaticConnection.send(this.task, this.objToSend);
+        try {
+            StaticConnection.sendObject(this.task);
+            boolean response = StaticConnection.send(this.objToSend);
 
-        if (response) {
-            Util.okDialog();
-        } else {
-            Util.errorDialog();
+            if (response) {
+                Util.okDialog();
+            } else {
+                Util.errorDialog();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -119,7 +128,7 @@ public class ManageTaskThread implements Runnable {
     }
 
     private void getRoles() {
-        ArrayList<String> roles = (ArrayList<String>) StaticConnection.get(this.task, null);
+        ArrayList<String> roles = ((AdminControl) window).getRoles();
         System.out.println(roles.size());
 
         String s = (String) JOptionPane.showInputDialog(
@@ -137,16 +146,22 @@ public class ManageTaskThread implements Runnable {
         try {
             StaticConnection.sendObject(ClientCst.ACTIVATE_USER);
             StaticConnection.sendObject(user);
-            DefaultTableModel model = ((AdminControl)window).getModel();
+            DefaultTableModel model = ((AdminControl) window).getModel();
             for (int i = 0; i < model.getRowCount(); i++) {
-                if((int)model.getValueAt(i, 0) == user.getId()){
-                    model.setValueAt(user.getRol(), i, 5);
+                if ((int) model.getValueAt(i, 0) == user.getId()) {
+                    model.setValueAt(((AdminControl) window).getRoles().get(user.getRol()), i, 5);
                 }
             }
             model.fireTableDataChanged();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void getGrades() {
+        ArrayList<Grade> gradeList = (ArrayList<Grade>) StaticConnection.get(this.task, null);
+        
+        ((AdminControl) window).buildGradeList(gradeList);
     }
 
     private void getUsers() {

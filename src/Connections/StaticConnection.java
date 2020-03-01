@@ -33,9 +33,9 @@ public class StaticConnection {
         }
     }
 
-    public synchronized static boolean send(int task, Object object) {
+    public synchronized static boolean send(Object object) {
         try {
-            sendObject(task);
+            
             sendObject(object);
             return (boolean) receiveItem();
         } catch (Exception ex) {
