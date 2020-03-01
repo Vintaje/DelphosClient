@@ -5,7 +5,7 @@
  */
 package Connections;
 
-
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -23,7 +23,7 @@ public class StaticConnection {
     public static ObjectOutputStream send;
     public static ObjectInputStream receive;
 
-    static {
+    public static void initialize() {
         try {
             server = new Socket(InetAddress.getLocalHost(), PORT);
             send = new ObjectOutputStream(server.getOutputStream());
@@ -33,15 +33,33 @@ public class StaticConnection {
         }
     }
 
-    public static boolean send(short task, Object object) {
+    public synchronized static boolean send(int task, Object object) {
         try {
             send.writeShort(task);
             send.writeObject(object);
-            return (boolean) receive.readObject();
+            return (boolean) receiveItem();
         } catch (Exception ex) {
         }
 
         return false;
+    }
+
+    public synchronized static Object get(short task, Object object) {
+        try {
+            send.writeObject(task);
+            if (object != null) {
+                send.writeObject(object);
+            }
+            return receiveItem();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static synchronized Object receiveItem() throws IOException, ClassNotFoundException {
+        return receive.readObject();
     }
 
     public static boolean loginUser() {

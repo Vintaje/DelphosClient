@@ -165,9 +165,6 @@
         <Component class="javax.swing.JTextField" name="tfAddress">
         </Component>
         <Component class="javax.swing.JPasswordField" name="tfPassword">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="jPasswordField1"/>
-          </Properties>
         </Component>
         <Component class="javax.swing.JSpinner" name="spAge">
           <Properties>

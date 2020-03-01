@@ -29,4 +29,9 @@ public class Util {
     public static void errorDialog() {
         JOptionPane.showMessageDialog(null, "Something going bad", "Error", JOptionPane.INFORMATION_MESSAGE);
     }
+    
+    public static void loginUser(String msg) {
+        
+        JOptionPane.showMessageDialog(null, msg, "All right", JOptionPane.INFORMATION_MESSAGE);
+    }
 }

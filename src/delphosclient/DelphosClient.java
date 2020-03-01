@@ -6,6 +6,7 @@
 package delphosclient;
 
 import Client.Login;
+import Connections.StaticConnection;
 
 /**
  *
@@ -18,6 +19,7 @@ public class DelphosClient {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        StaticConnection.initialize();
         Login login = new Login();
         login.setVisible(true);
     }

@@ -8,7 +8,7 @@ package Client;
 import Connections.StaticConnection;
 import Constants.ClientCst;
 import Models.User;
-import Threads.InsertThreadDB;
+import Threads.ManageTaskThread;
 import javax.swing.JOptionPane;
 
 /**
@@ -61,8 +61,6 @@ public class SignUp extends javax.swing.JFrame {
         jLabel4.setText("Address");
 
         jLabel5.setText("Age");
-
-        tfPassword.setText("jPasswordField1");
 
         spAge.setValue(18);
 
@@ -201,8 +199,10 @@ public class SignUp extends javax.swing.JFrame {
                 || address.isEmpty() || phoneNumber.isEmpty()) {
             Util.Util.fieldsError(null);
         } else {
-            User user = new User(username, password, address, phoneNumber, age);
-            new InsertThreadDB(user, ClientCst.REGISTER).start();
+            User user = new User(username, password, phoneNumber, address, age);
+            new ManageTaskThread(user, ClientCst.REGISTER).start();
+            this.dispose();
+            new Login().setVisible(true);
         }
     }//GEN-LAST:event_btSignUpActionPerformed
 
