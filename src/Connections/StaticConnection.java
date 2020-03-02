@@ -17,7 +17,6 @@ import java.net.Socket;
  */
 public class StaticConnection {
 
-    private final static String ADDRESS = "localhosst";
     private final static int PORT = 5000;
     public static Socket server;
     public static ObjectOutputStream send;

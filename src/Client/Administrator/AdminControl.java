@@ -30,15 +30,20 @@ import javax.swing.table.DefaultTableModel;
 public class AdminControl extends javax.swing.JFrame {
 
     int id;
+    private short gradeMode;
     User userSelected;
     private myModel model;
     private ArrayList<String> roles;
+    private ArrayList<Grade> grades;
 
     /**
      * Creates new form AdminControl
      */
     public AdminControl() {
         initComponents();
+        pnCurso.setVisible(false);
+        lbIdGrade.setVisible(false);
+        btEdit.setEnabled(false);
     }
 
     /**
@@ -61,7 +66,13 @@ public class AdminControl extends javax.swing.JFrame {
         jList1 = new javax.swing.JList<>();
         btCreate = new javax.swing.JButton();
         btEdit = new javax.swing.JButton();
-        btDelete = new javax.swing.JButton();
+        pnCurso = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        tfCodeGrade = new javax.swing.JTextField();
+        tfNameGrade = new javax.swing.JTextField();
+        btAceptar = new javax.swing.JButton();
+        lbIdGrade = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -120,10 +131,75 @@ public class AdminControl extends javax.swing.JFrame {
         jScrollPane3.setViewportView(jList1);
 
         btCreate.setText("Create");
+        btCreate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btCreateActionPerformed(evt);
+            }
+        });
 
         btEdit.setText("Edit");
+        btEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btEditActionPerformed(evt);
+            }
+        });
 
-        btDelete.setText("Delete");
+        jLabel1.setText("Code");
+
+        jLabel2.setText("Name");
+
+        btAceptar.setText("Aceptar");
+        btAceptar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btAceptarActionPerformed(evt);
+            }
+        });
+
+        lbIdGrade.setText("-1");
+        lbIdGrade.setEnabled(false);
+
+        javax.swing.GroupLayout pnCursoLayout = new javax.swing.GroupLayout(pnCurso);
+        pnCurso.setLayout(pnCursoLayout);
+        pnCursoLayout.setHorizontalGroup(
+            pnCursoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnCursoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnCursoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnCursoLayout.createSequentialGroup()
+                        .addGroup(pnCursoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tfCodeGrade)
+                            .addGroup(pnCursoLayout.createSequentialGroup()
+                                .addGroup(pnCursoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(tfNameGrade))
+                        .addContainerGap())
+                    .addGroup(pnCursoLayout.createSequentialGroup()
+                        .addComponent(lbIdGrade, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btAceptar, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(89, 89, 89))))
+        );
+        pnCursoLayout.setVerticalGroup(
+            pnCursoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnCursoLayout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(tfCodeGrade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(tfNameGrade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(pnCursoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btAceptar)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnCursoLayout.createSequentialGroup()
+                        .addComponent(lbIdGrade, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(12, 12, 12)))
+                .addContainerGap(27, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -136,7 +212,7 @@ public class AdminControl extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btCreate, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
                     .addComponent(btEdit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btDelete, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(pnCurso, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -148,10 +224,9 @@ public class AdminControl extends javax.swing.JFrame {
                         .addComponent(btCreate)
                         .addGap(18, 18, 18)
                         .addComponent(btEdit)
-                        .addGap(18, 18, 18)
-                        .addComponent(btDelete)
-                        .addGap(0, 170, Short.MAX_VALUE))
-                    .addComponent(jScrollPane3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(pnCurso, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -180,7 +255,7 @@ public class AdminControl extends javax.swing.JFrame {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
         new ManageTaskThread(null, ClientCst.GET_USERS, this).start();
-
+        new ManageTaskThread(null, ClientCst.GET_GRADES, this).start();
     }//GEN-LAST:event_formWindowOpened
 
     private void btActivateUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btActivateUserActionPerformed
@@ -188,6 +263,28 @@ public class AdminControl extends javax.swing.JFrame {
         new ManageTaskThread(null, ClientCst.GET_ROLES, this, userSelected).start();
 
     }//GEN-LAST:event_btActivateUserActionPerformed
+
+    private void btCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCreateActionPerformed
+        // TODO add your handling code here:
+        pnCurso.setVisible(true);
+        gradeMode = ClientCst.ADD_GRADE;
+    }//GEN-LAST:event_btCreateActionPerformed
+
+    private void btEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btEditActionPerformed
+        // TODO add your handling code here:
+        pnCurso.setVisible(true);
+        gradeMode = ClientCst.EDIT_GRADE;
+        lbIdGrade.setText(Integer.toString(grades.get(jList1.getSelectedIndex()).getId()));
+    }//GEN-LAST:event_btEditActionPerformed
+
+    private void btAceptarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btAceptarActionPerformed
+        // TODO add your handling code here:
+        String code = tfCodeGrade.getText();
+        String name = tfNameGrade.getText();
+        Grade grade = new Grade(Integer.parseInt(lbIdGrade.getText()), code, name);
+
+        new ManageTaskThread(grade, gradeMode, this).start();
+    }//GEN-LAST:event_btAceptarActionPerformed
 
     public synchronized void buildTable(ArrayList<User> userList) {
         //Build the data and set to table       
@@ -214,12 +311,22 @@ public class AdminControl extends javax.swing.JFrame {
     public void createListGrade(ArrayList<Grade> grades) {
         System.out.println(grades.size());
         if (!grades.isEmpty()) {
+            this.grades = grades;
             DefaultListModel model = new DefaultListModel();
-            for(Grade grade : grades){
-                model.addElement(grade.getCode()+"\t"+grade.getName());
+            for (Grade grade : grades) {
+                model.addElement(grade.getCode() + "\t" + grade.getName());
             }
             jList1.setModel(model);
-            
+            ListSelectionModel cell = jList1.getSelectionModel();
+            cell.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            cell.addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    btEdit.setEnabled(true);
+                    tfCodeGrade.setText(grades.get(jList1.getSelectedIndex()).getCode());
+                    tfNameGrade.setText(grades.get(jList1.getSelectedIndex()).getName());
+                }
+            });
         }
     }
 
@@ -256,7 +363,7 @@ public class AdminControl extends javax.swing.JFrame {
                     userSelected.setRol((byte) jTable1.getValueAt(fila, 5));
                 }
             });
-            new ManageTaskThread(null, ClientCst.GET_GRADES, this).start();
+
         }
     }
 
@@ -272,10 +379,12 @@ public class AdminControl extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btAceptar;
     private javax.swing.JButton btActivateUser;
     private javax.swing.JButton btCreate;
-    private javax.swing.JButton btDelete;
     private javax.swing.JButton btEdit;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -283,6 +392,10 @@ public class AdminControl extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTable1;
+    private javax.swing.JLabel lbIdGrade;
+    private javax.swing.JPanel pnCurso;
+    private javax.swing.JTextField tfCodeGrade;
+    private javax.swing.JTextField tfNameGrade;
     private javax.swing.JTabbedPane tpPanels;
     // End of variables declaration//GEN-END:variables
 

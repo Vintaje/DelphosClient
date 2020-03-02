@@ -14,10 +14,7 @@ import Util.Util;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -115,6 +112,9 @@ public class ManageTaskThread implements Runnable {
 
             if (response) {
                 Util.okDialog();
+                if (this.task == ClientCst.ADD_GRADE || this.task == ClientCst.EDIT_GRADE) {
+                    new ManageTaskThread(null, ClientCst.GET_GRADES, this.window).start();
+                }
             } else {
                 Util.errorDialog();
             }
@@ -147,12 +147,7 @@ public class ManageTaskThread implements Runnable {
             StaticConnection.sendObject(ClientCst.ACTIVATE_USER);
             StaticConnection.sendObject(user);
             DefaultTableModel model = ((AdminControl) window).getModel();
-            for (int i = 0; i < model.getRowCount(); i++) {
-                if ((int) model.getValueAt(i, 0) == user.getId()) {
-                    model.setValueAt(((AdminControl) window).getRoles().get(user.getRol()), i, 5);
-                }
-            }
-            model.fireTableDataChanged();
+            new ManageTaskThread(null, ClientCst.GET_USERS, this.window).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -160,7 +155,7 @@ public class ManageTaskThread implements Runnable {
 
     private void getGrades() {
         ArrayList<Grade> gradeList = (ArrayList<Grade>) StaticConnection.get(this.task, null);
-        
+
         ((AdminControl) window).buildGradeList(gradeList);
     }
 
