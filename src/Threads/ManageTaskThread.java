@@ -115,6 +115,9 @@ public class ManageTaskThread implements Runnable {
                 if (this.task == ClientCst.ADD_GRADE || this.task == ClientCst.EDIT_GRADE) {
                     new ManageTaskThread(null, ClientCst.GET_GRADES, this.window).start();
                 }
+                if(this.task == ClientCst.SET_GRADE || this.task == ClientCst.SET_USER_ROL){
+                     new ManageTaskThread(null, ClientCst.GET_USERS, this.window).start();
+                }
             } else {
                 Util.errorDialog();
             }
@@ -152,6 +155,7 @@ public class ManageTaskThread implements Runnable {
             ex.printStackTrace();
         }
     }
+    
 
     private void getGrades() {
         ArrayList<Grade> gradeList = (ArrayList<Grade>) StaticConnection.get(this.task, null);

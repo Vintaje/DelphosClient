@@ -8,6 +8,7 @@ package Client.Administrator;
 import Connections.StaticConnection;
 import Constants.ClientCst;
 import Models.Grade;
+import Models.Participante;
 import Models.User;
 import Threads.ManageTaskThread;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class AdminControl extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         btActivateUser = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList<>();
@@ -103,6 +105,13 @@ public class AdminControl extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("Set Grade");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -111,7 +120,9 @@ public class AdminControl extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 509, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btActivateUser)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btActivateUser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(14, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -119,7 +130,9 @@ public class AdminControl extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(15, 15, 15)
                 .addComponent(btActivateUser)
-                .addContainerGap(267, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton1)
+                .addContainerGap(223, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
@@ -286,6 +299,38 @@ public class AdminControl extends javax.swing.JFrame {
         new ManageTaskThread(grade, gradeMode, this).start();
     }//GEN-LAST:event_btAceptarActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        ArrayList<String> gradesName = new ArrayList<>();
+        for (int i = 0; i < grades.size(); i++) {
+            gradesName.add(grades.get(i).getName());
+        }
+        System.out.println(gradesName.size());
+
+        String s = (String) JOptionPane.showInputDialog(
+                this,
+                "Set the new grade", "New Grade",
+                JOptionPane.QUESTION_MESSAGE, null,
+                gradesName.toArray(),
+                gradesName.get(0));
+        int opcion = 0;
+        for (int i = 0; i < gradesName.size(); i++) {
+            if (s.equals(gradesName.get(i))) {
+                opcion = i;
+            }
+        }
+        Participante student = new Participante();
+        student.setId(userSelected.getId());
+        student.setRol(userSelected.getRol());
+        student.setIdgrade(grades.get(opcion).getId());
+        try {
+
+            new ManageTaskThread(student, ClientCst.SET_GRADE, this).start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     public synchronized void buildTable(ArrayList<User> userList) {
         //Build the data and set to table       
         Timer timer = new Timer();
@@ -360,7 +405,13 @@ public class AdminControl extends javax.swing.JFrame {
                     btActivateUser.setEnabled(true);
                     userSelected = new User();
                     userSelected.setId(id);
-                    userSelected.setRol((byte) jTable1.getValueAt(fila, 5));
+                    String rol = jTable1.getValueAt(fila, 5).toString();
+                    for (int i = 0; i < roles.size(); i++) {
+                        if (rol.equals(roles.get(i))) {
+                            userSelected.setRol((byte) i);
+                        }
+                    }
+
                 }
             });
 
@@ -378,11 +429,21 @@ public class AdminControl extends javax.swing.JFrame {
         this.model = model;
     }
 
+    public ArrayList<Grade> getGrades() {
+        return grades;
+    }
+
+    public void setGrades(ArrayList<Grade> grades) {
+        this.grades = grades;
+    }
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAceptar;
     private javax.swing.JButton btActivateUser;
     private javax.swing.JButton btCreate;
     private javax.swing.JButton btEdit;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JList<String> jList1;
