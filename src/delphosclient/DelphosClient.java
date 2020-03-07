@@ -5,7 +5,8 @@
  */
 package delphosclient;
 
-import Client.Login;
+
+import Client.Views.Login;
 import Connections.StaticConnection;
 
 /**

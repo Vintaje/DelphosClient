@@ -5,12 +5,18 @@
  */
 package Threads;
 
-import Client.Administrator.AdminControl;
+import Admin.Views.AdminControl;
+import Client.Views.StudentManager;
+import Client.Views.TeacherManager;
 import Connections.StaticConnection;
 import Constants.ClientCst;
 import Models.Grade;
+import Models.Mark;
+import Models.Participante;
+import Models.StaticResources.LoggedUser;
 import Models.User;
 import Util.Util;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -70,6 +76,18 @@ public class ManageTaskThread implements Runnable {
             case ClientCst.GET_GRADES:
                 getGrades();
                 break;
+            case ClientCst.GET_MY_GRADES:
+                getMyGrades();
+                break;
+            case ClientCst.GET_MY_STUDENTS:
+                getMyStudents();
+                break;
+            case ClientCst.GET_MY_TEACHERS:
+                getMyTearchers();
+                break;
+            case ClientCst.GET_MARKS:
+                getMarks();
+                break;
             default:
                 defaultOption();
         }
@@ -77,8 +95,10 @@ public class ManageTaskThread implements Runnable {
 
     public void login() {
         String msg = "";
-        byte code = (byte) StaticConnection.get(this.task, this.objToSend);
-        switch (code) {
+        User user = (User) StaticConnection.get(this.task, this.objToSend);
+
+        LoggedUser.setLogged(user);
+        switch (user.getRol()) {
             case -1:
                 msg = "I think you're not registered on Delphos. So... Fishy....";
                 break;
@@ -87,9 +107,13 @@ public class ManageTaskThread implements Runnable {
                 break;
             case 1:
                 msg = "Welcome to Delphos Student";
+                new StudentManager().setVisible(true);
+                window.dispose();
                 break;
             case 2:
                 msg = "Welcome to Delphos Teacher";
+                new TeacherManager().setVisible(true);
+                window.dispose();
                 break;
             case 3:
                 msg = "You are the Boss, welcome Admin";
@@ -115,8 +139,8 @@ public class ManageTaskThread implements Runnable {
                 if (this.task == ClientCst.ADD_GRADE || this.task == ClientCst.EDIT_GRADE) {
                     new ManageTaskThread(null, ClientCst.GET_GRADES, this.window).start();
                 }
-                if(this.task == ClientCst.SET_GRADE || this.task == ClientCst.SET_USER_ROL){
-                     new ManageTaskThread(null, ClientCst.GET_USERS, this.window).start();
+                if (this.task == ClientCst.SET_GRADE || this.task == ClientCst.SET_USER_ROL) {
+                    new ManageTaskThread(null, ClientCst.GET_USERS, this.window).start();
                 }
             } else {
                 Util.errorDialog();
@@ -155,7 +179,6 @@ public class ManageTaskThread implements Runnable {
             ex.printStackTrace();
         }
     }
-    
 
     private void getGrades() {
         ArrayList<Grade> gradeList = (ArrayList<Grade>) StaticConnection.get(this.task, null);
@@ -167,6 +190,55 @@ public class ManageTaskThread implements Runnable {
         ArrayList<User> userList = (ArrayList<User>) StaticConnection.get(this.task, null);
 
         ((AdminControl) window).buildTable(userList);
+    }
+
+    private void getMyGrades() {
+        try {
+            StaticConnection.sendObject(ClientCst.GET_MY_GRADES);
+            StaticConnection.sendObject(LoggedUser.getLogged().getId());
+            Object obj = StaticConnection.receiveItem();
+            ArrayList<Grade> grades = (ArrayList<Grade>) obj;
+            ((TeacherManager) window).setGradeList(grades);
+            ((TeacherManager) window).getGrades();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void getMyStudents() {
+        try {
+            StaticConnection.sendObject(ClientCst.GET_MY_STUDENTS);
+            StaticConnection.sendObject(objToSend);
+            ArrayList<Participante> students = (ArrayList<Participante>) StaticConnection.receive.readObject();
+            ((TeacherManager) window).setStudentList(students);
+            ((TeacherManager) window).getStudents();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void getMyTearchers() {
+        try {
+            StaticConnection.sendObject(ClientCst.GET_MY_TEACHERS);
+            StaticConnection.sendObject(objToSend);
+            ArrayList<User> students = (ArrayList<User>) StaticConnection.receive.readObject();
+            ((StudentManager) window).setTeacherList(students);
+            ((StudentManager) window).getTeachers();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void getMarks() {
+        try {
+            StaticConnection.sendObject(ClientCst.GET_MARKS);
+            StaticConnection.sendObject(objToSend);
+            
+            Mark mark = (Mark) StaticConnection.receiveItem();
+            ((StudentManager) window).getMarkField().setText("Mark: "+mark.getMark());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

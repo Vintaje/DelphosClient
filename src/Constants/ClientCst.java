@@ -24,5 +24,7 @@ public class ClientCst {
     public final static short GET_ROLES = 10;
     public final static short GET_GRADES = 11;
     public final static short DEL_GRADE = 12;
-    
+    public final static short GET_MY_GRADES = 13;
+    public final static short GET_MY_STUDENTS = 14;
+    public final static short GET_MY_TEACHERS = 15;
 }
