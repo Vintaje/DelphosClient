@@ -109,7 +109,7 @@ public class ManageTaskThread implements Runnable {
             User res = (User) StaticConnection.receiveItem();
             System.out.println(res);
             LoggedUser.setLogged(res);
-            
+
             switch (res.getRol()) {
                 case -1:
                     msg = "I think you're not registered on Delphos. So... Fishy....";
@@ -159,13 +159,17 @@ public class ManageTaskThread implements Runnable {
             Object obj = StaticConnection.receiveItem();
             if (LoggedUser.getLogged() != null) {
                 response = (boolean) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
-            }else{
+            } else {
                 response = (boolean) obj;
             }
             if (response) {
                 Util.okDialog();
             } else {
                 Util.errorDialog();
+            }
+
+            if (this.task == ClientCst.ADD_GRADE || this.task == ClientCst.EDIT_GRADE) {
+                new ManageTaskThread(null, ClientCst.GET_GRADES, window).start();
             }
         } catch (Exception ex) {
             ex.printStackTrace();

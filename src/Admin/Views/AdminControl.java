@@ -17,14 +17,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.DefaultListModel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -344,7 +338,7 @@ public class AdminControl extends javax.swing.JFrame {
             grades.get(jList1.getSelectedIndex()).setCode(code);
             grades.get(jList1.getSelectedIndex()).setName(name);
         }
-        this.buildGradeList(grades);
+
         new ManageTaskThread(grade, gradeMode, this).start();
     }//GEN-LAST:event_btAceptarActionPerformed
 
@@ -363,7 +357,7 @@ public class AdminControl extends javax.swing.JFrame {
                     JOptionPane.QUESTION_MESSAGE, null,
                     gradesName.toArray(),
                     gradesName.get(0));
-            model.setValueAt(s, selectedRow, 5);
+
             int opcion = 0;
             for (int i = 0; i < gradesName.size(); i++) {
                 if (s.equals(gradesName.get(i))) {
