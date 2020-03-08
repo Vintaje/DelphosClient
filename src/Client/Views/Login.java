@@ -95,6 +95,11 @@ public class Login extends javax.swing.JFrame {
         });
 
         jButton2.setText("Close");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jButton3.setText("Register");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
@@ -151,7 +156,8 @@ public class Login extends javax.swing.JFrame {
         String Password = new String(tfPassword.getPassword());
         String Username = tfUsername.getText();
         if(!Password.isEmpty() && !Username.isEmpty()){
-            new ManageTaskThread(new User(Username,Password), ClientCst.LOGIN, this).start();
+            User log = new User(Username,Password);
+            new ManageTaskThread(log, ClientCst.LOGIN, this).start();
         }else{
             Util.fieldsError(null);
         }
@@ -162,6 +168,11 @@ public class Login extends javax.swing.JFrame {
         new SignUp().setVisible(true);
         this.dispose();
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        System.exit(0);
+    }//GEN-LAST:event_jButton2ActionPerformed
     
     /**
      * @param args the command line arguments

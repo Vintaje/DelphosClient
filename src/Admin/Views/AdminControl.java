@@ -9,6 +9,8 @@ import Connections.StaticConnection;
 import Constants.ClientCst;
 import Models.Grade;
 import Models.Participante;
+import Models.StaticResources.LoggedUser;
+import Models.StaticResources.Security;
 import Models.User;
 import Threads.ManageTaskThread;
 import java.util.ArrayList;
@@ -19,6 +21,8 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -32,6 +36,7 @@ public class AdminControl extends javax.swing.JFrame {
 
     int id;
     private short gradeMode;
+    private int selectedRow;
     User userSelected;
     private myModel model;
     private ArrayList<String> roles;
@@ -45,6 +50,11 @@ public class AdminControl extends javax.swing.JFrame {
         pnCurso.setVisible(false);
         lbIdGrade.setVisible(false);
         btEdit.setEnabled(false);
+
+    }
+
+    public javax.swing.JFrame returnWindow() {
+        return this;
     }
 
     /**
@@ -257,14 +267,14 @@ public class AdminControl extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tpPanels, javax.swing.GroupLayout.PREFERRED_SIZE, 619, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btClose)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tpPanels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -281,14 +291,31 @@ public class AdminControl extends javax.swing.JFrame {
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
+        grades = new ArrayList<>();
         new ManageTaskThread(null, ClientCst.GET_USERS, this).start();
-        new ManageTaskThread(null, ClientCst.GET_GRADES, this).start();
+        new ManageTaskThread(null, ClientCst.GET_GRADES, returnWindow()).start();
+
     }//GEN-LAST:event_formWindowOpened
 
     private void btActivateUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btActivateUserActionPerformed
         // TODO add your handling code here:
-        new ManageTaskThread(null, ClientCst.GET_ROLES, this, userSelected).start();
+        System.out.println(roles.size());
 
+        String s = (String) JOptionPane.showInputDialog(
+                this,
+                "Set the new role", "New Role",
+                JOptionPane.QUESTION_MESSAGE, null,
+                roles.toArray(),
+                roles.get(0));
+
+        for (int i = 0; i < roles.size(); i++) {
+            if (s.equals(roles.get(i))) {
+                userSelected.setRol((byte) i);
+            }
+        }
+        if (!s.isEmpty()) {
+            new ManageTaskThread(userSelected, ClientCst.ACTIVATE_USER, this).start();
+        }
     }//GEN-LAST:event_btActivateUserActionPerformed
 
     private void btCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCreateActionPerformed
@@ -315,51 +342,55 @@ public class AdminControl extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        ArrayList<String> gradesName = new ArrayList<>();
-        for (int i = 0; i < grades.size(); i++) {
-            gradesName.add(grades.get(i).getName());
-        }
-        System.out.println(gradesName.size());
-
-        String s = (String) JOptionPane.showInputDialog(
-                this,
-                "Set the new grade", "New Grade",
-                JOptionPane.QUESTION_MESSAGE, null,
-                gradesName.toArray(),
-                gradesName.get(0));
-        int opcion = 0;
-        for (int i = 0; i < gradesName.size(); i++) {
-            if (s.equals(gradesName.get(i))) {
-                opcion = i;
+        if (grades.size() > 0) {
+            ArrayList<String> gradesName = new ArrayList<>();
+            for (int i = 0; i < grades.size(); i++) {
+                gradesName.add(grades.get(i).getName());
             }
-        }
-        Participante student = new Participante();
-        student.setId(userSelected.getId());
-        student.setRol(userSelected.getRol());
-        student.setIdgrade(grades.get(opcion).getId());
-        try {
+            System.out.println(gradesName.size());
 
-            new ManageTaskThread(student, ClientCst.SET_GRADE, this).start();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            String s = (String) JOptionPane.showInputDialog(
+                    this,
+                    "Set the new grade", "New Grade",
+                    JOptionPane.QUESTION_MESSAGE, null,
+                    gradesName.toArray(),
+                    gradesName.get(0));
+            model.setValueAt(s, selectedRow, 5);
+            int opcion = 0;
+            for (int i = 0; i < gradesName.size(); i++) {
+                if (s.equals(gradesName.get(i))) {
+                    opcion = i;
+                }
+            }
+            Participante student = new Participante();
+            student.setId(userSelected.getId());
+            student.setRol(userSelected.getRol());
+            student.setIdgrade(grades.get(opcion).getId());
+            try {
+
+                new ManageTaskThread(student, ClientCst.SET_GRADE, this).start();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }else{
+            JOptionPane.showMessageDialog(null,"There is no grades in the server",  "Info",JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCloseActionPerformed
         // TODO add your handling code here:
-        this.dispose();
+        System.exit(0);
     }//GEN-LAST:event_btCloseActionPerformed
 
-    public synchronized void buildTable(ArrayList<User> userList) {
-        //Build the data and set to table       
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                createTableUsers(userList);
-            }
-        }, 200);
-
+    public synchronized void createTables(ArrayList<User> users) {
+        try {
+            StaticConnection.sendObject(ClientCst.GET_ROLES);
+            Object obj = StaticConnection.receiveItem();
+            roles = (ArrayList<String>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
+            createTableUsers(users);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public synchronized void buildGradeList(ArrayList<Grade> gradeList) {
@@ -395,46 +426,51 @@ public class AdminControl extends javax.swing.JFrame {
     }
 
     public void createTableUsers(ArrayList<User> userList) {
-        roles = (ArrayList<String>) StaticConnection.get(ClientCst.GET_ROLES, null);
-        if (userList != null) {
-            model = new myModel();
+        try {
 
-            model.addColumn("ID");
-            model.addColumn("USER");
-            model.addColumn("PHONE");
-            model.addColumn("ADDRESS");
-            model.addColumn("AGE");
-            model.addColumn("ROL");
-            for (int i = 0; i < userList.size(); i++) {
-                User u = (User) userList.get(i);
-                String rol = roles.get(u.getRol());
+            if (userList != null) {
+                model = new myModel();
 
-                model.addRow(new Object[]{u.getId(), u.getName(), u.getPhoneNumber(), u.getAddress(), u.getAge(), rol});
-            }
+                model.addColumn("ID");
+                model.addColumn("USER");
+                model.addColumn("PHONE");
+                model.addColumn("ADDRESS");
+                model.addColumn("AGE");
+                model.addColumn("ROL");
+                for (int i = 0; i < userList.size(); i++) {
+                    User u = (User) userList.get(i);
+                    String rol = roles.get(u.getRol());
 
-            jTable1.setModel(model);
-            model.fireTableDataChanged();
-            ListSelectionModel cell = jTable1.getSelectionModel();
-            cell.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            cell.addListSelectionListener(new ListSelectionListener() {
-                @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    int fila = jTable1.getSelectedRow();
-                    id = (int) jTable1.getValueAt(fila, 0);
-                    btActivateUser.setEnabled(true);
-                    userSelected = new User();
-                    userSelected.setId(id);
-                    String rol = jTable1.getValueAt(fila, 5).toString();
-                    for (int i = 0; i < roles.size(); i++) {
-                        if (rol.equals(roles.get(i))) {
-                            userSelected.setRol((byte) i);
-                        }
-                    }
-
+                    model.addRow(new Object[]{u.getId(), u.getName(), u.getPhoneNumber(), u.getAddress(), u.getAge(), rol});
                 }
-            });
 
+                jTable1.setModel(model);
+                model.fireTableDataChanged();
+                ListSelectionModel cell = jTable1.getSelectionModel();
+                cell.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                cell.addListSelectionListener(new ListSelectionListener() {
+                    @Override
+                    public void valueChanged(ListSelectionEvent e) {
+                        selectedRow = jTable1.getSelectedRow();
+                        id = (int) jTable1.getValueAt(selectedRow, 0);
+                        btActivateUser.setEnabled(true);
+                        userSelected = new User();
+                        userSelected.setId(id);
+                        String rol = jTable1.getValueAt(selectedRow, 5).toString();
+                        for (int i = 0; i < roles.size(); i++) {
+                            if (rol.equals(roles.get(i))) {
+                                userSelected.setRol((byte) i);
+                            }
+                        }
+
+                    }
+                });
+
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+
     }
 
     /**

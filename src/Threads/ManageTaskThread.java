@@ -14,14 +14,15 @@ import Models.Grade;
 import Models.Mark;
 import Models.Participante;
 import Models.StaticResources.LoggedUser;
+import Models.StaticResources.Security;
 import Models.User;
 import Util.Util;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import javax.swing.table.DefaultTableModel;
+
 
 /**
  *
@@ -49,7 +50,7 @@ public class ManageTaskThread implements Runnable {
         this.window = window;
         this.user = user;
         this.thread = new Thread(this);
-        System.out.println(this.user);
+
     }
 
     //If we need to insert something just set the object and the task
@@ -62,7 +63,9 @@ public class ManageTaskThread implements Runnable {
 
     @Override
     public void run() {
-
+        try{
+        StaticConnection.sendObject(this.task);
+        System.out.println("Tarea enviada: " + this.task);
         switch (this.task) {
             case ClientCst.LOGIN:
                 login();
@@ -88,60 +91,74 @@ public class ManageTaskThread implements Runnable {
             case ClientCst.GET_MARKS:
                 getMarks();
                 break;
+            case ClientCst.ACTIVATE_USER:
+                activateUser();
+                break;
             default:
                 defaultOption();
+        }
+        }catch(Exception ex){
+            ex.printStackTrace();
         }
     }
 
     public void login() {
-        String msg = "";
-        User user = (User) StaticConnection.get(this.task, this.objToSend);
+        try {
+            String msg = "";
 
-        LoggedUser.setLogged(user);
-        switch (user.getRol()) {
-            case -1:
-                msg = "I think you're not registered on Delphos. So... Fishy....";
-                break;
-            case 0:
-                msg = "Loggin unavaliable, your user isnt activated by an administrator";
-                break;
-            case 1:
-                msg = "Welcome to Delphos Student";
-                new StudentManager().setVisible(true);
-                window.dispose();
-                break;
-            case 2:
-                msg = "Welcome to Delphos Teacher";
-                new TeacherManager().setVisible(true);
-                window.dispose();
-                break;
-            case 3:
-                msg = "You are the Boss, welcome Admin";
-                new AdminControl().setVisible(true);
-                window.dispose();
-                break;
-            case 4:
-                msg = "Welcome Delphos Teacher and The Boss";
-                new AdminControl().setVisible(true);
-                window.dispose();
-                break;
+            StaticConnection.sendObject(this.objToSend);
+
+            User res = (User) StaticConnection.receiveItem();
+            System.out.println(res);
+            LoggedUser.setLogged(res);
+            switch (res.getRol()) {
+                case -1:
+                    msg = "I think you're not registered on Delphos. So... Fishy....";
+                    break;
+                case 0:
+                    msg = "Loggin unavaliable, your user isnt activated by an administrator";
+                    break;
+                case 1:
+                    msg = "Welcome to Delphos Student";
+                    new StudentManager().setVisible(true);
+                    window.dispose();
+                    break;
+                case 2:
+                    msg = "Welcome to Delphos Teacher";
+                    new TeacherManager().setVisible(true);
+                    window.dispose();
+                    break;
+                case 3:
+                    msg = "You are the Boss, welcome Admin";
+                    new AdminControl().setVisible(true);
+                    window.dispose();
+                    break;
+                case 4:
+                    msg = "Welcome Delphos Teacher and The Boss";
+                    new AdminControl().setVisible(true);
+                    window.dispose();
+                    break;
+            }
+            Util.loginUser(msg);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        Util.loginUser(msg);
     }
 
     public void defaultOption() {
         try {
-            StaticConnection.sendObject(this.task);
-            boolean response = StaticConnection.send(this.objToSend);
 
+            if (LoggedUser.getLogged() != null) {
+                Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
+                StaticConnection.sendObject(obj);
+            } else {
+                StaticConnection.sendObject(objToSend);
+            }
+            Object obj = StaticConnection.receiveItem();
+            
+            boolean response = (boolean) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
             if (response) {
                 Util.okDialog();
-                if (this.task == ClientCst.ADD_GRADE || this.task == ClientCst.EDIT_GRADE) {
-                    new ManageTaskThread(null, ClientCst.GET_GRADES, this.window).start();
-                }
-                if (this.task == ClientCst.SET_GRADE || this.task == ClientCst.SET_USER_ROL) {
-                    new ManageTaskThread(null, ClientCst.GET_USERS, this.window).start();
-                }
             } else {
                 Util.errorDialog();
             }
@@ -155,46 +172,32 @@ public class ManageTaskThread implements Runnable {
     }
 
     private void getRoles() {
-        ArrayList<String> roles = ((AdminControl) window).getRoles();
-        System.out.println(roles.size());
+        
+     
+    }
 
-        String s = (String) JOptionPane.showInputDialog(
-                window,
-                "Set the new role", "New Role",
-                JOptionPane.QUESTION_MESSAGE, null,
-                roles.toArray(),
-                roles.get(0));
-
-        for (int i = 0; i < roles.size(); i++) {
-            if (s.equals(roles.get(i))) {
-                user.setRol((byte) i);
-            }
-        }
+    private void getGrades() {
         try {
-            StaticConnection.sendObject(ClientCst.ACTIVATE_USER);
-            StaticConnection.sendObject(user);
-            DefaultTableModel model = ((AdminControl) window).getModel();
-            new ManageTaskThread(null, ClientCst.GET_USERS, this.window).start();
+            Object obj = StaticConnection.receiveItem();
+            ArrayList<Grade> gradeList = (ArrayList<Grade>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj );
+            ((AdminControl) window).buildGradeList(gradeList);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private void getGrades() {
-        ArrayList<Grade> gradeList = (ArrayList<Grade>) StaticConnection.get(this.task, null);
-
-        ((AdminControl) window).buildGradeList(gradeList);
-    }
-
     private void getUsers() {
-        ArrayList<User> userList = (ArrayList<User>) StaticConnection.get(this.task, null);
+        try {
+            ArrayList<User> userList = (ArrayList<User>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), StaticConnection.receiveItem());
 
-        ((AdminControl) window).buildTable(userList);
+            ((AdminControl) window).createTables(userList);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void getMyGrades() {
         try {
-            StaticConnection.sendObject(ClientCst.GET_MY_GRADES);
             StaticConnection.sendObject(LoggedUser.getLogged().getId());
             Object obj = StaticConnection.receiveItem();
             ArrayList<Grade> grades = (ArrayList<Grade>) obj;
@@ -207,8 +210,8 @@ public class ManageTaskThread implements Runnable {
 
     private void getMyStudents() {
         try {
-            StaticConnection.sendObject(ClientCst.GET_MY_STUDENTS);
-            StaticConnection.sendObject(objToSend);
+            Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
+            StaticConnection.sendObject(obj);
             ArrayList<Participante> students = (ArrayList<Participante>) StaticConnection.receive.readObject();
             ((TeacherManager) window).setStudentList(students);
             ((TeacherManager) window).getStudents();
@@ -219,8 +222,9 @@ public class ManageTaskThread implements Runnable {
 
     private void getMyTearchers() {
         try {
-            StaticConnection.sendObject(ClientCst.GET_MY_TEACHERS);
-            StaticConnection.sendObject(objToSend);
+
+            Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
+            StaticConnection.sendObject(obj);
             ArrayList<User> students = (ArrayList<User>) StaticConnection.receive.readObject();
             ((StudentManager) window).setTeacherList(students);
             ((StudentManager) window).getTeachers();
@@ -231,11 +235,30 @@ public class ManageTaskThread implements Runnable {
 
     private void getMarks() {
         try {
-            StaticConnection.sendObject(ClientCst.GET_MARKS);
-            StaticConnection.sendObject(objToSend);
-            
+            Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
+            StaticConnection.sendObject(obj);
             Mark mark = (Mark) StaticConnection.receiveItem();
-            ((StudentManager) window).getMarkField().setText("Mark: "+mark.getMark());
+            ((StudentManager) window).getMarkField().setText("Mark: " + mark.getMark());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void activateUser() {
+           try {
+            Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
+            StaticConnection.sendObject(obj);
+            
+            obj = StaticConnection.receiveItem();
+            System.out.println(obj);
+            Object resb = Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
+            boolean res = (boolean) resb;
+            if (res) {
+                Util.okDialog();
+            } else {
+                Util.errorDialog();
+            }
+            new ManageTaskThread(null, ClientCst.GET_USERS, this.window).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

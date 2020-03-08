@@ -5,11 +5,17 @@
  */
 package Connections;
 
+import Models.StaticResources.LoggedUser;
+import Models.StaticResources.Security;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 /**
  *
@@ -21,6 +27,7 @@ public class StaticConnection {
     public static Socket server;
     public static ObjectOutputStream send;
     public static ObjectInputStream receive;
+    public static SecretKey secretKey;
 
     public static void initialize() {
         try {
@@ -32,38 +39,20 @@ public class StaticConnection {
         }
     }
 
-    public synchronized static boolean send(Object object) {
-        try {
-            
-            sendObject(object);
-            return (boolean) receiveItem();
-        } catch (Exception ex) {
-        }
+   
 
-        return false;
-    }
-
-    public synchronized static Object get(short task, Object object) {
-        try {
-            sendObject(task);
-            if (object != null) {
-                sendObject(object);
-            }
-            return receiveItem();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
-    }
 
     public static synchronized Object receiveItem() throws IOException, ClassNotFoundException {
-        return receive.readObject();
+        Object obj = receive.readObject();
+       
+        return obj;
     }
     
-    public static synchronized void sendObject(Object object) throws IOException{
+    public static synchronized void sendObject(Object object) throws IOException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException{
+       
         send.writeObject(object);
-        send.flush();
+        
+        
     }
 
     public static boolean loginUser() {
