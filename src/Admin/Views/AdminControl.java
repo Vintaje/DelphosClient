@@ -20,6 +20,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -336,7 +337,14 @@ public class AdminControl extends javax.swing.JFrame {
         String code = tfCodeGrade.getText();
         String name = tfNameGrade.getText();
         Grade grade = new Grade(Integer.parseInt(lbIdGrade.getText()), code, name);
-
+        
+        if(gradeMode == ClientCst.ADD_GRADE){
+            grades.add(grade);
+        }else if(gradeMode == ClientCst.EDIT_GRADE){
+            grades.get(jList1.getSelectedIndex()).setCode(code);
+            grades.get(jList1.getSelectedIndex()).setName(name);
+        }
+        this.buildGradeList(grades);
         new ManageTaskThread(grade, gradeMode, this).start();
     }//GEN-LAST:event_btAceptarActionPerformed
 

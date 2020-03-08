@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-
-
 /**
  *
  * @author vinta
@@ -63,41 +61,41 @@ public class ManageTaskThread implements Runnable {
 
     @Override
     public void run() {
-        try{
-        StaticConnection.sendObject(this.task);
-        System.out.println("Tarea enviada: " + this.task);
-        switch (this.task) {
-            case ClientCst.LOGIN:
-                login();
-                break;
-            case ClientCst.GET_USERS:
-                getUsers();
-                break;
-            case ClientCst.GET_ROLES:
-                getRoles();
-                break;
-            case ClientCst.GET_GRADES:
-                getGrades();
-                break;
-            case ClientCst.GET_MY_GRADES:
-                getMyGrades();
-                break;
-            case ClientCst.GET_MY_STUDENTS:
-                getMyStudents();
-                break;
-            case ClientCst.GET_MY_TEACHERS:
-                getMyTearchers();
-                break;
-            case ClientCst.GET_MARKS:
-                getMarks();
-                break;
-            case ClientCst.ACTIVATE_USER:
-                activateUser();
-                break;
-            default:
-                defaultOption();
-        }
-        }catch(Exception ex){
+        try {
+            StaticConnection.sendObject(this.task);
+            System.out.println("Tarea enviada: " + this.task);
+            switch (this.task) {
+                case ClientCst.LOGIN:
+                    login();
+                    break;
+                case ClientCst.GET_USERS:
+                    getUsers();
+                    break;
+                case ClientCst.GET_ROLES:
+                    getRoles();
+                    break;
+                case ClientCst.GET_GRADES:
+                    getGrades();
+                    break;
+                case ClientCst.GET_MY_GRADES:
+                    getMyGrades();
+                    break;
+                case ClientCst.GET_MY_STUDENTS:
+                    getMyStudents();
+                    break;
+                case ClientCst.GET_MY_TEACHERS:
+                    getMyTearchers();
+                    break;
+                case ClientCst.GET_MARKS:
+                    getMarks();
+                    break;
+                case ClientCst.ACTIVATE_USER:
+                    activateUser();
+                    break;
+                default:
+                    defaultOption();
+            }
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -111,12 +109,15 @@ public class ManageTaskThread implements Runnable {
             User res = (User) StaticConnection.receiveItem();
             System.out.println(res);
             LoggedUser.setLogged(res);
+            
             switch (res.getRol()) {
                 case -1:
                     msg = "I think you're not registered on Delphos. So... Fishy....";
+                    LoggedUser.setLogged(null);
                     break;
                 case 0:
                     msg = "Loggin unavaliable, your user isnt activated by an administrator";
+                    LoggedUser.setLogged(null);
                     break;
                 case 1:
                     msg = "Welcome to Delphos Student";
@@ -154,9 +155,13 @@ public class ManageTaskThread implements Runnable {
             } else {
                 StaticConnection.sendObject(objToSend);
             }
+            boolean response = false;
             Object obj = StaticConnection.receiveItem();
-            
-            boolean response = (boolean) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
+            if (LoggedUser.getLogged() != null) {
+                response = (boolean) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
+            }else{
+                response = (boolean) obj;
+            }
             if (response) {
                 Util.okDialog();
             } else {
@@ -172,14 +177,13 @@ public class ManageTaskThread implements Runnable {
     }
 
     private void getRoles() {
-        
-     
+
     }
 
     private void getGrades() {
         try {
             Object obj = StaticConnection.receiveItem();
-            ArrayList<Grade> gradeList = (ArrayList<Grade>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj );
+            ArrayList<Grade> gradeList = (ArrayList<Grade>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
             ((AdminControl) window).buildGradeList(gradeList);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -245,10 +249,10 @@ public class ManageTaskThread implements Runnable {
     }
 
     private void activateUser() {
-           try {
+        try {
             Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
             StaticConnection.sendObject(obj);
-            
+
             obj = StaticConnection.receiveItem();
             System.out.println(obj);
             Object resb = Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
