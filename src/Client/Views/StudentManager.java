@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.DefaultListModel;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -25,9 +26,9 @@ import javax.swing.event.ListSelectionEvent;
  * @author vinta
  */
 public class StudentManager extends javax.swing.JFrame {
-    
+
     private ArrayList<User> teachers;
-    
+
     /**
      * Creates new form StudentManager
      */
@@ -39,11 +40,15 @@ public class StudentManager extends javax.swing.JFrame {
     public void setTeacherList(ArrayList<User> teachers) {
         this.teachers = teachers;
     }
-    
-    public JTextField getMarkField(){
+
+    public JTextField getMarkField() {
         return this.tfMark;
     }
-    
+
+    public JCheckBox getMarkSignature() {
+        return this.cbOkSignature;
+    }
+
     public synchronized void getTeachers() {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -54,7 +59,6 @@ public class StudentManager extends javax.swing.JFrame {
         }, 200);
     }
 
-    
     public synchronized void createTeacherList() {
         System.out.println(teachers.size());
         if (!teachers.isEmpty()) {
@@ -66,11 +70,11 @@ public class StudentManager extends javax.swing.JFrame {
             ListSelectionModel cell = Teachers.getSelectionModel();
             cell.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             cell.addListSelectionListener((ListSelectionEvent e) -> {
-            new ManageTaskThread(new Mark(0, LoggedUser.getLogged().getId(),teachers.get(Teachers.getSelectedIndex()).getId(),  0), ClientCst.GET_MARKS, this).start();
+                new ManageTaskThread(new Mark(0, LoggedUser.getLogged().getId(), teachers.get(Teachers.getSelectedIndex()).getId(), ""), ClientCst.GET_MARKS, this).start();
             });
         }
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -84,6 +88,7 @@ public class StudentManager extends javax.swing.JFrame {
         Teachers = new javax.swing.JList<>();
         tfMark = new javax.swing.JTextField();
         btClose = new javax.swing.JButton();
+        cbOkSignature = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -98,6 +103,10 @@ public class StudentManager extends javax.swing.JFrame {
             }
         });
 
+        cbOkSignature.setText("Signature OK");
+        cbOkSignature.setEnabled(false);
+        cbOkSignature.setFocusable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -105,10 +114,15 @@ public class StudentManager extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                        .addComponent(tfMark))
-                    .addComponent(btClose, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                            .addComponent(tfMark)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(cbOkSignature)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btClose)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -118,9 +132,15 @@ public class StudentManager extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(tfMark, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
-                .addComponent(btClose)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                        .addComponent(btClose)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbOkSignature)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
 
         pack();
@@ -135,6 +155,7 @@ public class StudentManager extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList<String> Teachers;
     private javax.swing.JButton btClose;
+    private javax.swing.JCheckBox cbOkSignature;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField tfMark;
     // End of variables declaration//GEN-END:variables

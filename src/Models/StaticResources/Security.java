@@ -104,7 +104,7 @@ public class Security {
 		try {
 			Signature verifica = Signature.getInstance("SHA1withDSA");
 			verifica.initVerify(publicaServidor);
-			verifica.update(String.valueOf(nota.getMark()).getBytes());
+			verifica.update(nota.getMark().getBytes());
 			valido = verifica.verify(nota.getSignature());
 		} catch (InvalidKeyException | NoSuchAlgorithmException e) {
 		}

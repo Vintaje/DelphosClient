@@ -200,9 +200,9 @@ public class TeacherManager extends javax.swing.JFrame {
     private void btMarksActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMarksActionPerformed
         // TODO add your handling code here:
         if (Students.getSelectedIndex() != -1) {
-            float ans = Float.parseFloat(JOptionPane.showInputDialog(null,
+            String ans = JOptionPane.showInputDialog(null,
                     "Set mark",
-                    "Set mark to Student: " + students.get(Students.getSelectedIndex()).getName(), JOptionPane.INFORMATION_MESSAGE));
+                    "Set mark to Student: " + students.get(Students.getSelectedIndex()).getName(), JOptionPane.INFORMATION_MESSAGE);
             new ManageTaskThread(new Mark(0, students.get(Students.getSelectedIndex()).getId(), LoggedUser.getLogged().getId(), ans), ClientCst.SET_MARKS).start();
         }
     }//GEN-LAST:event_btMarksActionPerformed

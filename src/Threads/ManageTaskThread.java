@@ -17,8 +17,10 @@ import Models.StaticResources.LoggedUser;
 import Models.StaticResources.Security;
 import Models.User;
 import Util.Util;
+import java.security.PublicKey;
 
 import java.util.ArrayList;
+import javax.crypto.SealedObject;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -140,7 +142,9 @@ public class ManageTaskThread implements Runnable {
                     window.dispose();
                     break;
             }
+            Security.publicaServidor = (PublicKey)  StaticConnection.receiveItem();
             Util.loginUser(msg);
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -206,9 +210,11 @@ public class ManageTaskThread implements Runnable {
 
     private void getMyGrades() {
         try {
-            StaticConnection.sendObject(LoggedUser.getLogged().getId());
-            Object obj = StaticConnection.receiveItem();
-            ArrayList<Grade> grades = (ArrayList<Grade>) obj;
+            SealedObject obj = Security.cifrarConClaveSimetrica(LoggedUser.getLogged().getId(), LoggedUser.getLogged().getSecretKey());
+            StaticConnection.sendObject(obj);
+
+            ArrayList<Grade> grades = (ArrayList<Grade>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), StaticConnection.receiveItem());
+            System.out.println(grades.size());
             ((TeacherManager) window).setGradeList(grades);
             ((TeacherManager) window).getGrades();
         } catch (Exception ex) {
@@ -220,7 +226,7 @@ public class ManageTaskThread implements Runnable {
         try {
             Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
             StaticConnection.sendObject(obj);
-            ArrayList<Participante> students = (ArrayList<Participante>) StaticConnection.receive.readObject();
+            ArrayList<Participante> students = (ArrayList<Participante>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), StaticConnection.receiveItem());
             ((TeacherManager) window).setStudentList(students);
             ((TeacherManager) window).getStudents();
         } catch (Exception ex) {
@@ -233,7 +239,7 @@ public class ManageTaskThread implements Runnable {
 
             Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
             StaticConnection.sendObject(obj);
-            ArrayList<User> students = (ArrayList<User>) StaticConnection.receive.readObject();
+            ArrayList<User> students = (ArrayList<User>) Security.descifrar(LoggedUser.getLogged().getSecretKey(), StaticConnection.receiveItem());
             ((StudentManager) window).setTeacherList(students);
             ((StudentManager) window).getTeachers();
         } catch (Exception ex) {
@@ -245,7 +251,12 @@ public class ManageTaskThread implements Runnable {
         try {
             Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
             StaticConnection.sendObject(obj);
-            Mark mark = (Mark) StaticConnection.receiveItem();
+            Mark mark = (Mark) Security.descifrar(LoggedUser.getLogged().getSecretKey(), StaticConnection.receiveItem());
+            if (Security.verificarMensaje(mark)) {
+                ((StudentManager) window).getMarkSignature().setSelected(true);
+            } else {
+                ((StudentManager) window).getMarkSignature().setSelected(false);
+            }
             ((StudentManager) window).getMarkField().setText("Mark: " + mark.getMark());
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -256,10 +267,7 @@ public class ManageTaskThread implements Runnable {
         try {
             Object obj = Security.cifrarConClaveSimetrica(objToSend, LoggedUser.getLogged().getSecretKey());
             StaticConnection.sendObject(obj);
-
-            obj = StaticConnection.receiveItem();
-            System.out.println(obj);
-            Object resb = Security.descifrar(LoggedUser.getLogged().getSecretKey(), obj);
+            Object resb = Security.descifrar(LoggedUser.getLogged().getSecretKey(), StaticConnection.receiveItem());
             boolean res = (boolean) resb;
             if (res) {
                 Util.okDialog();
